@@ -1,0 +1,32 @@
+name: ga4-deploy
+version: 0.1.0
+description: "GA4 Deploy: script the GA4 Admin API from Hermes — channel groupings, audiences, annotations and enhanced measurement — with every production quirk enforced in code, deployed through your own Google OAuth."
+author: Skeptical Agency
+homepage: https://github.com/skeptical-agency/ga4-deploy
+license: MIT
+tags: [ga4, google-analytics, marketing, admin-api, channel-groupings, audiences, annotations]
+provides_tools:
+  - ga4_status
+  - ga4_discover
+  - ga4_channel_groupings
+  - ga4_audiences
+  - ga4_annotations
+  - ga4_enhanced_measurement
+optional_env:
+  - name: GA4DEPLOY_GOOGLE_CLIENT_ID
+    description: "Google Cloud Desktop OAuth client ID with the GA4 Admin API enabled and analytics.edit scope allowed."
+    url: "https://console.cloud.google.com/apis/credentials"
+  - name: GA4DEPLOY_GOOGLE_CLIENT_SECRET
+    description: "Client secret paired with GA4DEPLOY_GOOGLE_CLIENT_ID."
+    secret: true
+oauth:
+  - id: google
+    authorize_url: https://accounts.google.com/o/oauth2/v2/auth
+    token_url: https://oauth2.googleapis.com/token
+    scopes:
+      - https://www.googleapis.com/auth/analytics.edit
+      - https://www.googleapis.com/auth/analytics.readonly
+    client_id_env: GA4DEPLOY_GOOGLE_CLIENT_ID
+    client_secret_env: GA4DEPLOY_GOOGLE_CLIENT_SECRET
+    hosts: [analyticsadmin.googleapis.com, www.googleapis.com]
+    authorize_params: {access_type: offline, prompt: consent}
