@@ -180,6 +180,8 @@ SCHEMAS = {
                                "formInteractionsEnabled, searchQueryParameter, uriQueryParameter, "
                                "uriSearchQueryParameter. Send false explicitly — GET omits false.",
             },
+            "dry_run": {"type": "boolean",
+                         "description": "mode=set: compute updateMask + request body without PATCHing"},
         },
         "required": ["mode", "property"],
     },

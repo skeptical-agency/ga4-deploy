@@ -1,5 +1,5 @@
 name: ga4-deploy
-version: 0.1.0
+version: 0.1.1
 description: "GA4 Deploy: script the GA4 Admin API from Hermes — channel groupings, audiences, annotations and enhanced measurement — with every production quirk enforced in code, deployed through your own Google OAuth."
 author: Skeptical Agency
 homepage: https://github.com/skeptical-agency/ga4-deploy
@@ -12,6 +12,8 @@ provides_tools:
   - ga4_audiences
   - ga4_annotations
   - ga4_enhanced_measurement
+provides_hooks:
+  - pre_tool_call
 optional_env:
   - name: GA4DEPLOY_GOOGLE_CLIENT_ID
     description: "Google Cloud Desktop OAuth client ID with the GA4 Admin API enabled and analytics.edit scope allowed."

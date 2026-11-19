@@ -118,7 +118,8 @@ def enhanced_measurement(args, ctx=None):
         if mode == "set":
             if not args.get("stream") or not args.get("settings"):
                 return _ok({"error": "mode=set needs 'stream' and 'settings'"})
-            return _ok(ga4.em_set(prop, args["stream"], args["settings"]))
+            return _ok(ga4.em_set(prop, args["stream"], args["settings"],
+                                   dry_run=bool(args.get("dry_run"))))
         return _ok({"error": f"unknown mode {mode!r}"})
     except Exception as exc:  # noqa: BLE001
         return _fail(exc)

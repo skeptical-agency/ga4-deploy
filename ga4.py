@@ -85,7 +85,7 @@ def list_accounts():
 
 
 def list_properties(account_id):
-    acct = re.sub(r"^accounts/", "", str(account_id))
+    acct = _check_numeric_id(re.sub(r"^accounts/", "", str(account_id)), "account")
     data = _api("GET", "v1beta/properties",
                 params={"filter": f"parent:accounts/{acct}", "pageSize": 200})
     return data.get("properties", [])
@@ -96,9 +96,19 @@ def list_streams(prop):
     return _api("GET", f"v1alpha/{p}/dataStreams").get("dataStreams", [])
 
 
+def _check_numeric_id(value, kind):
+    """Reject non-numeric ids before they are interpolated into API paths."""
+    vid = str(value).strip()
+    if not vid.isdigit():
+        raise ValueError(f"invalid GA4 {kind} id {value!r} — must be numeric (digits only)")
+    return vid
+
+
 def _prop(prop):
     pid = str(prop)
-    return pid if pid.startswith("properties/") else f"properties/{pid}"
+    if pid.startswith("properties/"):
+        pid = pid[len("properties/"):]
+    return "properties/" + _check_numeric_id(pid, "property")
 
 
 def status():
@@ -495,7 +505,7 @@ def em_get(prop, stream=None):
     return {"property": p, "streams": out}
 
 
-def em_set(prop, stream, settings):
+def em_set(prop, stream, settings, dry_run=False):
     p = _prop(prop)
     bad = set(settings) - EM_FIELDS
     if bad:
@@ -504,6 +514,10 @@ def em_set(prop, stream, settings):
         raise ValueError("settings is empty")
     sid = str(stream)
     if sid.startswith("properties/"):
+        m = re.fullmatch(r"properties/(\d+)/dataStreams/(\d+)", sid)
+        if not m:
+            raise ValueError(f"invalid stream resource name {stream!r} — expected "
+                             f"properties/NNN/dataStreams/NNN with numeric ids")
         sname = sid
     else:
         streams = list_streams(p)
@@ -513,6 +527,10 @@ def em_set(prop, stream, settings):
             raise ValueError(f"no stream matching {sid!r} in {p}")
         sname = match[0]["name"]
     mask = ",".join(sorted(settings))
+    if dry_run:
+        return {"property": p, "stream": sname, "dry_run": True,
+                "updateMask": mask, "body": dict(settings),
+                "note": "dry run — PATCH not issued; false values must be sent explicitly when applied"}
     res = _api("PATCH", f"v1alpha/{sname}/enhancedMeasurementSettings",
                params={"updateMask": mask}, body=dict(settings))
     return {"stream": sname, "updated": sorted(settings), "settings_after": res,
